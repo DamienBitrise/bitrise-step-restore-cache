@@ -523,22 +523,30 @@ func NewBackoff(min, max time.Duration, attemptNum int, resp *http.Response) tim
 	timeout := int64(30)                                           // define timeout again
 	if resp != nil {
 		if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == http.StatusServiceUnavailable {
+			fmt.Print(("[XTRACELOG] StatusCode: %s",resp.StatusCode)
 			if s, ok := resp.Header["Retry-After"]; ok {
+				fmt.Print(("[XTRACELOG] Retry-After")
 				if sleep, err := strconv.ParseInt(s[0], 10, 64); err == nil {
+					fmt.Print(("[XTRACELOG] Sleep: %s, Timeout: %s", sleep, timeout)
 					if sleep > timeout {             // waiting time supplied by server must not exceed timeout
+						fmt.Print(("[XTRACELOG] sleep > timeout")
 						return time.Duration(0)
 					}
+					fmt.Print(("[XTRACELOG] sleep > timeout - else")
 					return time.Second * time.Duration(sleep)
 				}
 			}
 		}
 	}
 
+	fmt.Print(("[XTRACELOG] attemptNum: %s", attemptNum)
 	mult := math.Pow(2, float64(attemptNum)) * float64(min)
 	sleep := time.Duration(mult)
 	if float64(sleep) != mult || sleep > max {
+		fmt.Print(("[XTRACELOG] sleep > max")
 		sleep = max
 	}
+	fmt.Print(("[XTRACELOG] sleep: %s", sleep)
 	return sleep
 }
 
