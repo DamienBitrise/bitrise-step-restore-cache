@@ -597,6 +597,7 @@ func PassthroughErrorHandler(resp *http.Response, err error, _ int) (*http.Respo
 
 // Do wraps calling an HTTP method with retries.
 func (c *Client) Do(req *Request) (*http.Response, error) {
+	fmt.Print("[XTRACELOG] Do")
 	c.clientInit.Do(func() {
 		if c.HTTPClient == nil {
 			c.HTTPClient = cleanhttp.DefaultPooledClient()
@@ -620,6 +621,7 @@ func (c *Client) Do(req *Request) (*http.Response, error) {
 	var doErr, respErr, checkErr error
 
 	for i := 0; ; i++ {
+		fmt.Print("[XTRACELOG] attempt")
 		doErr, respErr = nil, nil
 		attempt++
 
@@ -701,6 +703,8 @@ func (c *Client) Do(req *Request) (*http.Response, error) {
 			c.drainBody(resp.Body)
 		}
 
+		fmt.Print("[XTRACELOG] Backoff")
+		
 		wait := c.Backoff(c.RetryWaitMin, c.RetryWaitMax, i, resp)
 		if logger != nil {
 			desc := fmt.Sprintf("%s %s", req.Method, req.URL)
