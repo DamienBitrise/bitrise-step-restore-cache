@@ -402,7 +402,7 @@ func NewClient() *Client {
 		RetryWaitMax: defaultRetryWaitMax,
 		RetryMax:     defaultRetryMax,
 		CheckRetry:   DefaultRetryPolicy,
-		Backoff:      DefaultBackoff,
+		Backoff:      NewBackoff,
 	}
 }
 
@@ -505,6 +505,29 @@ func DefaultBackoff(min, max time.Duration, attemptNum int, resp *http.Response)
 		if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == http.StatusServiceUnavailable {
 			if s, ok := resp.Header["Retry-After"]; ok {
 				if sleep, err := strconv.ParseInt(s[0], 10, 64); err == nil {
+					return time.Second * time.Duration(sleep)
+				}
+			}
+		}
+	}
+
+	mult := math.Pow(2, float64(attemptNum)) * float64(min)
+	sleep := time.Duration(mult)
+	if float64(sleep) != mult || sleep > max {
+		sleep = max
+	}
+	return sleep
+}
+
+func NewBackoff(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
+	timeout := int64(30)                                           // define timeout again
+	if resp != nil {
+		if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == http.StatusServiceUnavailable {
+			if s, ok := resp.Header["Retry-After"]; ok {
+				if sleep, err := strconv.ParseInt(s[0], 10, 64); err == nil {
+					if sleep > timeout {             // waiting time supplied by server must not exceed timeout
+						return time.Duration(0)
+					}
 					return time.Second * time.Duration(sleep)
 				}
 			}
