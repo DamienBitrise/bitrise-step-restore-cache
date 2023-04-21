@@ -529,7 +529,7 @@ func NewBackoff(min, max time.Duration, attemptNum int, resp *http.Response) tim
 				if sleep, err := strconv.ParseInt(s[0], 10, 64); err == nil {
 					fmt.Print("[XTRACELOG] Sleep: %s, Timeout: %s", sleep, timeout)
 					if sleep > timeout {             // waiting time supplied by server must not exceed timeout
-						fmt.Print(("[XTRACELOG] sleep > timeout")
+						fmt.Print("[XTRACELOG] sleep > timeout")
 						return time.Duration(0)
 					}
 					fmt.Print("[XTRACELOG] sleep > timeout - else")
